@@ -1,0 +1,28 @@
+{
+  "name": "animalclicks",
+  "version": "1.0.0",
+  "description": "This is an npm package for adding animal effects to their clicks in their website.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/LongpanZhou/AnimalClicks.git"
+  },
+  "keywords": [
+    "animal",
+    "cat",
+    "dog",
+    "raccoon",
+    "click",
+    "effects",
+    "clickeffects"
+  ],
+  "author": "",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/LongpanZhou/AnimalClicks/issues"
+  },
+  "homepage": "https://github.com/LongpanZhou/AnimalClicks#readme"
+}
