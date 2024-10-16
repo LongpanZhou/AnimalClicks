@@ -1,16 +1,38 @@
 class AnimalClicks {
+    static instance = null;
+
     constructor(innerText = ['🦝'],
                 time = 2000,
+                quality = 1,
                 angle = 0,
                 velocityX = 0,
                 velocityY = 0,
                 gravity = 0.075,
                 dx = 10,
                 dy = 10,
-                effects = { random: false, physics: false, fade: true, hideCursor: false },
+                effects = { random: true, physics: true, fade: true, hideCursor: true },
                 fontSize = '24px') {
+        if (AnimalClicks.instance) {
+            AnimalClicks.instance.update({
+                innerText,
+                time,
+                quality,
+                angle,
+                velocityX,
+                velocityY,
+                gravity,
+                dx,
+                dy,
+                effects,
+                fontSize
+            });
+
+            return AnimalClicks.instance;
+        }
+
         this.innerText = innerText;
         this.time = time;
+        this.quality = quality;
         this.angle = angle;
         this.velocityX = velocityX;
         this.velocityY = velocityY;
@@ -20,25 +42,46 @@ class AnimalClicks {
         this.dx = dx;
         this.dy = dy;
         this.currentIndex = 0;
-        this.handleClick = this.handleClick.bind(this);
-        this.mouseMoveHandler = this.mouseMoveHandler.bind(this);
-        this.textElement = null;
 
+        this.handleClick = this.handleClick.bind(this);
+        document.addEventListener('click', this.handleClick);
+
+        this.mouseMoveHandler = this.mouseMoveHandler.bind(this);
+        document.addEventListener('mousemove', this.mouseMoveHandler);
+
+        this.textElement = this.createTextElement(0, 0);
+        document.body.appendChild(this.textElement);
         this.injectStyles();
-        
+
         if (this.effects.hideCursor) {
             this.hideCursor();
-            document.addEventListener('mousemove', this.mouseMoveHandler);
-            this.textElement = this.createTextElement(500, 500);
-            document.body.appendChild(this.textElement);
             this.textElement.classList.add('visible');
         }
-        document.addEventListener('click', this.handleClick);
+
+        AnimalClicks.instance = this;
+    }
+    
+    update(newProps) {
+        Object.keys(newProps).forEach(key => {
+            if (this[key] !== undefined) {
+                this[key] = newProps[key];
+            }
+        });
+        
+        if (this.textElement) {
+            this.textElement.remove();
+            this.textElement = this.createTextElement(0, 0);
+            document.body.appendChild(this.textElement);
+            this.showCursor();
+            if (this.effects.hideCursor) {
+                this.hideCursor();
+                this.textElement.classList.add('visible');
+            }
+        }
     }
 
-    hideCursor() {
-        document.body.classList.add('hide-cursor');
-    }
+    hideCursor() {document.body.classList.add('hide-cursor');}
+    showCursor() {document.body.classList.remove('hide-cursor');}
 
     injectStyles() {
         if (!document.getElementById('animal-clicks-styles')) {
@@ -51,6 +94,7 @@ class AnimalClicks {
                     transition: opacity 0.5s ease-out;
                     will-change: transform;
                     user-select: none;
+                    pointer-events: none;
                     z-index: 1000;
                 }
 
@@ -67,13 +111,14 @@ class AnimalClicks {
     }
 
     mouseMoveHandler(event) {
+        const mouseX = event.clientX + window.scrollX - this.dx;
+        const mouseY = event.clientY + window.scrollY - this.dy;
+        
         if (this.textElement) {
-            const mouseX = event.clientX - this.dx;
-            const mouseY = event.clientY - this.dy;
             this.textElement.style.left = `${mouseX}px`;
             this.textElement.style.top = `${mouseY}px`;
         }
-    }
+    }    
 
     createTextElement(x, y) {
         let textToDisplay;
@@ -93,40 +138,44 @@ class AnimalClicks {
         textElement.style.left = `${x}px`;
         textElement.style.top = `${y}px`;
         textElement.style.fontSize = this.fontSize;
-
+        
         return textElement;
     }
 
     handleClick(event) {
-        const textElement = (this.textElement === null)
-        ? this.createTextElement(event.clientX - this.dx, event.clientY - this.dy)
-        : this.textElement.cloneNode(true); 
+        const adjustedX = event.clientX + window.scrollX - this.dx;
+        const adjustedY = event.clientY + window.scrollY - this.dy;
 
-        if (this.effects.hideCursor){
-            this.textElement.remove();
-            this.textElement = this.createTextElement(event.clientX - this.dx, event.clientY - this.dy);
-            document.body.appendChild(this.textElement);
+        this.textElement.remove();
+        this.textElement = this.createTextElement(adjustedX, adjustedY);
+        document.body.appendChild(this.textElement);
+
+        if (this.effects.hideCursor) {
+            this.hideCursor();
             this.textElement.classList.add('visible');
         }
 
-        document.body.appendChild(textElement);
-        const randomRotation = Math.random() * this.angle;
-        textElement.style.transform = `rotate(${randomRotation}deg)`;
+        for (let i = 0; i < this.quality; i++) {
+            const textElement = this.textElement.cloneNode(true);
+            document.body.appendChild(textElement);
+            const randomRotation = Math.random() * this.angle;
+            textElement.style.transform = `rotate(${randomRotation}deg)`;
+            
+            if (this.effects.fade) {
+                setTimeout(() => {
+                    textElement.classList.add('visible');
+                }, 0);
         
-        if (this.effects.fade) {
-            setTimeout(() => {
-                textElement.classList.add('visible');
-            }, 0);
-    
-            setTimeout(() => {
-                textElement.remove();
-            }, this.time);
+                setTimeout(() => {
+                    textElement.remove();
+                }, this.time);
+            }
+        
+            if (this.effects.physics) {
+                this.applyPhysics(textElement);
+            }
         }
-
-        if (this.effects.physics) {
-            this.applyPhysics(textElement);
-        }
-    }
+    }    
 
     applyPhysics(textElement) {
         let VelX = (Math.random() < 0.5 ? -1 : 1) * Math.random() * this.velocityX;
@@ -144,7 +193,7 @@ class AnimalClicks {
             textElement.style.top = `${currentTop + VelY}px`;
             textElement.style.left = `${currentLeft + VelX}px`;
     
-            if (currentTop + VelY < maxY && currentLeft + VelX < maxX && currentLeft + VelX > 0) {
+            if (currentTop + VelY < maxY - 50 && currentLeft + VelX < maxX && currentLeft + VelX > 0) {
                 requestAnimationFrame(fall);
             } else {
                 textElement.remove();
@@ -153,6 +202,13 @@ class AnimalClicks {
     
         requestAnimationFrame(fall);
     }
+
+    shutdown() {
+        document.removeEventListener('click', this.handleClick);
+        document.removeEventListener('mousemove', this.mouseMoveHandler);
+        this.showCursor();
+        this.textElement.remove();
+    }
 }
 
-module.exports = AnimalClicks;
+export default AnimalClicks;
