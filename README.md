@@ -3,6 +3,12 @@
 This is an npm package for adding animal effects to their clicks in their website.
 ![AnimalClicks](./imgs/demo.gif)
 
+### Installation
+Install the [package](https://www.npmjs.com/package/animalclicks) using npm or download the [javascript](https://github.com/LongpanZhou/AnimalClicks/blob/main/index.js).
+```
+npm install animalclicks
+```
+
 ### Constructor
 This is a singleton class, one instance of the class will be existing at all time.
 ```Javascript
@@ -77,13 +83,6 @@ AnimalClicks.instance.update({  innerText,
 ### Usage:
 
 React.js, TypeScript, JavaScript
-
-1. Import Library (You might need to add @ts-ignore)
-```javascript
-//@ts-ignore
-import  AnimalClicks  from  './index.js';
-```
-2. Define class
 ```javascript
 new AnimalClicks(['🦝'],
     2000, 1, 180, 2.5, 4.5, 0.075, 10, 10,
@@ -98,7 +97,8 @@ new AnimalClicks(['🦝'],
 ```
 
 HTML
-3. Define class in `index.js` first
+
+Define class in `index.js` first
 ```javascript
 new AnimalClicks(['🦝'],
     2000, 1, 180, 2.5, 4.5, 0.075, 10, 10,
@@ -111,7 +111,8 @@ new AnimalClicks(['🦝'],
 	'24px'
 );
 ```
-4. Embed JavaScript
+
+Embed JavaScript
 ```html
 <script src="index.js"/>
 ```
